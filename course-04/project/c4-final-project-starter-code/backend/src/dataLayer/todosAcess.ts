@@ -12,7 +12,7 @@ const logger = createLogger('TodosAccess')
 // TODO: Implement the dataLayer logic
 export class TodosAccess {
     constructor(
-        private readonly docClient: DocumentClient = new AWS.DynamoDB.DocumentClient(),
+        private readonly docClient: DocumentClient = new AWS.DynamoDB.DocumentClient({region: 'us-east-1'}),
         private readonly s3Client = new AWS.S3({signatureVersion: 'v4'}),
         private readonly todoTable = process.env.TODOS_TABLE,
         private readonly s3BucketName = process.env.ATTACHMENT_S3_BUCKET,
@@ -20,7 +20,7 @@ export class TodosAccess {
     }
 
     async getTodosForUser(userId: string): Promise<TodoItem[]> {
-        logger.info("Getting all todos for current user");
+        logger.info("Getting all todos for current user: " + userId);
 
         const params = {
             TableName: this.todoTable,
@@ -41,7 +41,7 @@ export class TodosAccess {
     }
 
     async createTodo(todoItem: TodoItem): Promise<TodoItem> {
-        logger.info("Creating new todo");
+        logger.info("Creating new todo: "+todoItem);
 
         const params = {
             TableName: this.todoTable,
@@ -49,13 +49,13 @@ export class TodosAccess {
         };
 
         const result = await this.docClient.put(params).promise();
-        logger.info(result);
+        logger.info("Create Todo retured with: "+result);
 
         return todoItem as TodoItem;
     }
 
     async updateTodo(todoUpdate: TodoUpdate, todoId: string, userId: string): Promise<TodoUpdate> {
-        logger.info("Updating todo");
+        logger.info("Updating todo: "+todoUpdate);
 
         const params = {
             TableName: this.todoTable,
@@ -78,7 +78,7 @@ export class TodosAccess {
         };
 
         const result = await this.docClient.update(params).promise();
-        logger.info(result);
+        logger.info("Updating todo: "+result);
         const attributes = result.Attributes;
 
         return attributes as TodoUpdate;
